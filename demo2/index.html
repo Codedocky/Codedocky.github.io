@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安徽专升本招生信息查询工具</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        /* 头部样式优化 */
+        .header { 
+            text-align: center; 
+            color: white; 
+            margin-bottom: 25px; 
+        }
+        .header h1 { 
+            font-size: 1.8rem; 
+            margin-bottom: 8px; 
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .header .subtitle {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            background: rgba(255,255,255,0.15);
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+        }
+        
+        /* 广告位样式 */
+        .advertisement {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%);
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.35);
+        }
+        .advertisement .title {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .advertisement .content {
+            font-size: 0.9rem;
+            opacity: 0.95;
+        }
+        
+        /* 搜索框样式优化 */
+        .search-box {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 25px;
+            position: relative;
+        }
+        .input-group { 
+            display: flex; 
+            gap: 12px; 
+            position: relative; 
+            align-items: stretch;
+        }
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-wrapper::before {
+            content: "🔍";
+            position: absolute;
+            left: 14px;
+            font-size: 16px;
+            z-index: 1;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 18px 14px 42px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        input[type="text"]:focus { 
+            outline: none; 
+            border-color: #667eea; 
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+        button {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4); 
+        }
+        button:active { transform: scale(0.98); }
+        
+        /* 搜索建议下拉框 */
+        .suggestions-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .suggestions-box.active { display: block; }
+        .suggestion-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+        .suggestion-item:hover { background: #f5f5ff; }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item .name { font-weight: 600; color: #333; }
+        .suggestion-item .category { font-size: 0.85rem; color: #666; margin-top: 4px; }
+        
+        .result-section { display: none; }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .card h3 { color: #667eea; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; }
+        
+        /* 汇总统计卡片 */
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-card.public { background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); }
+        .stat-card.private { background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); }
+        .stat-card .label { font-size: 0.9rem; color: #666; margin-bottom: 8px; }
+        .stat-card .number { font-size: 2.5rem; font-weight: bold; }
+        .stat-card.public .number { color: #2e7d32; }
+        .stat-card.private .number { color: #e65100; }
+        .stat-card .unit { font-size: 0.9rem; color: #666; }
+        
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .info-item {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .info-item label { display: block; color: #666; font-size: 0.85rem; margin-bottom: 5px; }
+        .info-item span { display: block; color: #333; font-size: 1rem; font-weight: 600; }
+        
+        /* 学校卡片样式 */
+        .schools-container { margin-top: 15px; }
+        .school-card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        .school-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        .school-card.public { border-left: 4px solid #2e7d32; }
+        .school-card.private { border-left: 4px solid #e65100; }
+        .school-card.other { border-left: 4px solid #666; }
+        
+        .school-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .school-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .school-type {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .school-type.public { background: #e8f5e9; color: #2e7d32; }
+        .school-type.private { background: #fff3e0; color: #e65100; }
+        
+        .major-list { display: grid; gap: 10px; }
+        
+        /* 表头样式 */
+        .major-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            padding: 10px 12px;
+            background: #e8e8e8;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+        }
+        .major-header span:first-child { text-align: left; }
+        
+        /* 折叠图标 */
+        .expand-icon {
+            font-size: 0.8rem;
+            color: #999;
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+        
+        .major-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        .major-item .label { display: none; }
+        
+        .major-item .major-name { font-weight: 600; color: #333; }
+        .major-item .info { color: #666; text-align: center; }
+        .major-item.new .major-name { color: #2e7d32; }
+        .major-item.stop .major-name { color: #c33; text-decoration: line-through; }
+        
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        .section-title.public { background: #e8f5e9; color: #2e7d32; }
+        .section-title.private { background: #fff3e0; color: #e65100; }
+        
+        @media (max-width: 768px) {
+            .major-item { grid-template-columns: 1fr; gap: 8px; }
+            .major-item .label { display: inline; color: #999; margin-right: 5px; }
+            .major-item .info { text-align: left; }
+        }
+        
+        .no-data { text-align: center; padding: 40px; color: #999; }
+        .loading { text-align: center; color: #666; padding: 20px; display: none; }
+        .error { background: #fee; color: #c33; padding: 15px; border-radius: 10px; margin-top: 15px; display: none; }
+        .count-info { color: #666; font-size: 0.9rem; margin-bottom: 15px; }
+        
+        .match-list { max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 10px; margin-bottom: 20px; }
+        .match-item { padding: 12px 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
+        .match-item:hover { background: #f0f0ff; }
+        .match-item:last-child { border-bottom: none; }
+        .match-item .major-name { font-weight: 600; color: #333; }
+        .match-item .category { font-size: 0.85rem; color: #666; margin-top: 4px; }
+        
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            .header h1 { font-size: 1.5rem; }
+            .header .subtitle { font-size: 0.85rem; padding: 6px 15px; }
+            .search-box { 
+                padding: 12px; 
+                border-radius: 16px; 
+            }
+            .input-group { 
+                flex-direction: column; 
+                gap: 10px;
+            }
+            .input-wrapper {
+                width: 100%;
+            }
+            input[type="text"] { 
+                padding: 16px 16px 16px 44px; 
+                font-size: 16px;
+                border-radius: 14px;
+                height: 54px;
+            }
+            .input-wrapper::before {
+                left: 16px;
+                font-size: 18px;
+            }
+            button { 
+                padding: 16px 24px; 
+                width: 100%;
+                height: 54px;
+                font-size: 17px;
+                border-radius: 14px;
+            }
+            .info-grid { grid-template-columns: 1fr; }
+            .summary-stats { grid-template-columns: 1fr; }
+            .advertisement { padding: 14px 15px; border-radius: 12px; }
+            .advertisement .title { font-size: 0.95rem; }
+            .advertisement .content { font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>安徽专升本招生信息查询</h1>
+            <p class="subtitle">输入专科院校专业即可快速查看可报考本科院校及专业信息</p>
+        </div>
+
+        <!-- 广告位 -->
+        <div class="advertisement">
+            <div class="title">💡 知识改变命运，硅基改变碳基</div>
+            <div class="content">专升本请添加微信 19955362171 📲</div>
+        </div>
+
+        <div class="search-box">
+            <div class="input-group">
+                <div style="flex:1;position:relative;">
+                    <input type="text" id="searchInput" placeholder="请输入专科专业名称（如：护理、计算机、会计等）..." autocomplete="off">
+                    <div class="suggestions-box" id="suggestionsBox"></div>
+                </div>
+                <button id="searchBtn" onclick="searchMajor()">查询</button>
+            </div>
+            <div class="loading" id="loading"><p>正在加载数据...</p></div>
+            <div class="error" id="errorMsg"></div>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <!-- 匹配的专业列表 -->
+            <div class="card" id="matchCard">
+                <h3>匹配的专业列表</h3>
+                <div class="match-list" id="matchList"></div>
+            </div>
+
+            <!-- 招生信息 -->
+            <div class="card" id="admissionCard">
+                <h3>招生院校信息</h3>
+                
+                <!-- 汇总统计 -->
+                <div class="summary-stats" id="summaryStats" style="display:none;">
+                    <div class="stat-card public">
+                        <div class="label">公办院校</div>
+                        <div class="number" id="publicSchoolCount">0</div>
+                        <div class="unit">所学校招生</div>
+                    </div>
+                    <div class="stat-card private">
+                        <div class="label">民办院校</div>
+                        <div class="number" id="privateSchoolCount">0</div>
+                        <div class="unit">所学校招生</div>
+                    </div>
+                </div>
+                
+                <div class="count-info" id="countInfo"></div>
+                <div class="schools-container" id="schoolsContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== 院校分类数据 ==========
+        const publicSchools = [
+            '安徽工业大学', '安徽财经大学', '安徽农业大学', '安徽医科大学', '安徽师范大学',
+            '安徽建筑大学', '阜阳师范大学', '安徽中医药大学', '安庆师范大学', '蚌埠医科大学',
+            '皖南医学院', '淮南师范学院', '安徽科技学院', '皖西学院', '合肥大学',
+            '黄山学院', '巢湖学院', '铜陵学院', '滁州学院', '宿州学院',
+            '合肥师范学院', '蚌埠学院', '池州学院', '亳州学院', '安徽艺术学院',
+            '芜湖职业技术大学', '安徽职业技术大学', '安徽第二医学院'
+        ];
+
+        const privateSchools = [
+            '芜湖学院', '安徽新华学院', '安徽三联学院', '安徽外国语学院', '安徽信息工程学院',
+            '合肥经济学院', '合肥城市学院', '蚌埠工商学院', '阜阳理工学院', '皖江工学院',
+            '淮北理工学院', '马鞍山学院', '安徽文达信息工程学院', '安徽医科大学临床医学院'
+        ];
+
+        // 大类名称映射表（dz.json中的名称 -> 26zsjz.json中的名称）
+        const categoryMapping = {
+            '电子与信息大类': '电子信息大类',
+            '财经商贸大类': '财经商贸大类',
+            '医药卫生大类': '医药卫生大类',
+            '教育与体育大类': '教育与体育大类',
+            '文化艺术大类': '文化艺术大类',
+            '土木建筑大类': '土木建筑大类',
+            '装备制造大类': '装备制造大类',
+            '农林牧渔大类': '农林牧渔大类',
+            '水利大类': '水利大类',
+            '交通运输大类': '交通运输大类',
+            '旅游大类': '旅游大类',
+            '公共管理与服务大类': '公共管理与服务大类',
+            '公安与司法大类': '公安与司法大类',
+            '生物与化工大类': '生物与化工大类',
+            '轻工纺织大类': '轻工纺织大类',
+            '食品药品与粮食大类': '食品药品与粮食大类',
+            '资源环境与安全大类': '资源环境与安全大类',
+            '能源动力与材料大类': '能源动力与材料大类',
+            '新闻传播大类': '新闻传播大类'
+        };
+
+        function getSchoolType(schoolName) {
+            if (publicSchools.includes(schoolName)) return '公办';
+            if (privateSchools.includes(schoolName)) return '民办';
+            return '未知';
+        }
+
+        // 获取招生数据中的大类名称
+        function getZsCategoryName(dzCategoryName) {
+            return categoryMapping[dzCategoryName] || dzCategoryName;
+        }
+
+        // ========== 数据加载 ==========
+        var dzData = null;
+        var zsData = null;
+
+        function loadDzData() {
+            return fetch('dz.json')
+                .then(response => response.json())
+                .then(data => {
+                    dzData = data.Sheet1;
+                    console.log('专业目录加载成功:', dzData.length, '条');
+                });
+        }
+
+        function loadZsData() {
+            return fetch('26zsjz.json')
+                .then(response => response.json())
+                .then(data => {
+                    zsData = data;
+                    console.log('招生数据加载成功');
+                    console.log('招生数据大类:', Object.keys(zsData).filter(k => Array.isArray(zsData[k])));
+                });
+        }
+
+        async function init() {
+            showLoading(true);
+            try {
+                await Promise.all([loadDzData(), loadZsData()]);
+                console.log('所有数据加载完成');
+            } catch (error) {
+                showError('数据加载失败: ' + error.message);
+            }
+            showLoading(false);
+        }
+
+        // ========== 搜索逻辑 ==========
+        function fuzzyMatchMajor(keyword) {
+            if (!dzData) return [];
+            
+            const lowerKeyword = keyword.toLowerCase().trim();
+            if (!lowerKeyword) return [];
+            
+            const matches = [];
+            
+            dzData.forEach(item => {
+                const majorName = (item['专业名称'] || '').toLowerCase();
+                // 改进的模糊匹配：包含关键词，或关键词包含专业名
+                if (majorName.includes(lowerKeyword) || lowerKeyword.includes(majorName)) {
+                    matches.push({
+                        专业代码: item['专业代码'],
+                        专业名称: item['专业名称'],
+                        大类代码: item['大类代码'],
+                        大类名称: item['大类名称'],
+                        小类代码: item['小类代码'],
+                        小类名称: item['小类名称']
+                    });
+                }
+            });
+            
+            // 去重
+            const uniqueMap = new Map();
+            matches.forEach(m => {
+                const key = m['专业名称'];
+                if (!uniqueMap.has(key)) {
+                    uniqueMap.set(key, m);
+                }
+            });
+            
+            return Array.from(uniqueMap.values());
+        }
+
+        function findAdmissionByCategory(categoryName) {
+            const results = [];
+            if (!zsData) return results;
+
+            // 获取招生数据中的大类名称
+            const zsCategoryName = getZsCategoryName(categoryName);
+            console.log('原始大类:', categoryName, '-> 招生大类:', zsCategoryName);
+
+            // 1. 搜索增招专业
+            if (zsData['增招专业']) {
+                zsData['增招专业'].forEach(item => {
+                    const zsMajor = (item['招生专业'] || '').replace(/（.*?）/g, '').replace(/\(.*?\)/g, '').trim();
+                    // 匹配专业名包含关键词
+                    const categoryKeyword = zsCategoryName.replace('大类', '');
+                    if (zsMajor.includes(categoryKeyword) || categoryKeyword.includes(zsMajor)) {
+                        results.push({...item, source: '增招专业', isNew: true});
+                    }
+                });
+            }
+
+            // 2. 搜索停招专业
+            if (zsData['停招专业']) {
+                zsData['停招专业'].forEach(item => {
+                    const zsMajor = (item['招生专业'] || '').replace(/（.*?）/g, '').replace(/\(.*?\)/g, '').trim();
+                    const categoryKeyword = zsCategoryName.replace('大类', '');
+                    if (zsMajor.includes(categoryKeyword) || categoryKeyword.includes(zsMajor)) {
+                        results.push({...item, source: '停招专业', isStop: true});
+                    }
+                });
+            }
+
+            // 3. 直接搜索该大类
+            if (zsData[zsCategoryName]) {
+                console.log('找到大类:', zsCategoryName, '数据条数:', zsData[zsCategoryName].length);
+                zsData[zsCategoryName].forEach(item => {
+                    results.push({...item, source: zsCategoryName, isNormal: true});
+                });
+            } else {
+                // 尝试模糊匹配大类名称
+                for (const key in zsData) {
+                    if (key === '增招专业' || key === '停招专业') continue;
+                    if (typeof zsData[key] === 'object' && Array.isArray(zsData[key])) {
+                        const categoryKeyword = zsCategoryName.replace('大类', '');
+                        if (key.includes(categoryKeyword) || categoryKeyword.includes(key.replace('大类', ''))) {
+                            console.log('模糊匹配到大类:', key);
+                            zsData[key].forEach(item => {
+                                results.push({...item, source: key, isNormal: true});
+                            });
+                        }
+                    }
+                }
+            }
+
+            // 去重（根据学校+招生专业）
+            const uniqueMap = new Map();
+            results.forEach(item => {
+                const key = (item['    学校'] || item['学校'] || '') + '|' + (item['招生专业'] || '');
+                if (!uniqueMap.has(key)) {
+                    uniqueMap.set(key, item);
+                }
+            });
+
+            return Array.from(uniqueMap.values());
+        }
+
+        // ========== 实时搜索建议 ==========
+        function showSuggestions(matches) {
+            const box = document.getElementById('suggestionsBox');
+            if (matches.length === 0) {
+                box.classList.remove('active');
+                return;
+            }
+            
+            let html = '';
+            matches.slice(0, 8).forEach(item => {
+                html += `
+                    <div class="suggestion-item" onclick="selectSuggestion('${item['专业名称']}')">
+                        <div class="name">${item['专业名称']}</div>
+                        <div class="category">${item['大类名称']}</div>
+                    </div>
+                `;
+            });
+            
+            box.innerHTML = html;
+            box.classList.add('active');
+        }
+
+        function hideSuggestions() {
+            document.getElementById('suggestionsBox').classList.remove('active');
+        }
+
+        window.selectSuggestion = function(majorName) {
+            document.getElementById('searchInput').value = majorName;
+            hideSuggestions();
+            searchMajor();
+        };
+
+        // 输入事件监听
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const keyword = e.target.value.trim();
+            if (keyword.length >= 1 && dzData) {
+                const matches = fuzzyMatchMajor(keyword);
+                showSuggestions(matches);
+            } else {
+                hideSuggestions();
+            }
+        });
+
+        document.getElementById('searchInput').addEventListener('blur', function() {
+            setTimeout(hideSuggestions, 200);
+        });
+
+        // ========== 主搜索函数 ==========
+        async function searchMajor() {
+            const input = document.getElementById('searchInput').value.trim();
+            if (!input) {
+                showError('请输入专业名称');
+                return;
+            }
+
+            hideSuggestions();
+            hideError();
+            showLoading(true);
+            document.getElementById('resultSection').style.display = 'none';
+
+            try {
+                if (!dzData) await loadDzData();
+                if (!zsData) await loadZsData();
+
+                const matchedMajors = fuzzyMatchMajor(input);
+                
+                if (matchedMajors.length === 0) {
+                    showLoading(false);
+                    showError('未找到匹配的专业，请尝试其他关键词');
+                    return;
+                }
+
+                displayMatchList(matchedMajors.slice(0, 10));
+
+                const firstMatch = matchedMajors[0];
+                console.log('使用专业:', firstMatch['专业名称'], '大类:', firstMatch['大类名称']);
+
+                const admissionData = findAdmissionByCategory(firstMatch['大类名称']);
+                const limitedData = admissionData.slice(0, 500);
+                
+                displayAdmissionData(limitedData, admissionData.length);
+
+                showLoading(false);
+                document.getElementById('resultSection').style.display = 'block';
+
+            } catch (error) {
+                showLoading(false);
+                showError('查询失败: ' + error.message);
+            }
+        }
+
+        // ========== 显示函数 ==========
+        function displayMatchList(matches) {
+            const container = document.getElementById('matchList');
+            
+            if (matches.length === 0) {
+                container.innerHTML = '<div class="no-data">未找到匹配的专业</div>';
+                return;
+            }
+
+            let html = '';
+            matches.forEach((item, index) => {
+                html += `
+                    <div class="match-item" onclick="selectMajor(${index})">
+                        <div class="major-name">${item['专业名称']}</div>
+                        <div class="category">${item['大类名称']} / ${item['小类名称']}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            window.currentMatches = matches;
+        }
+
+        function displayAdmissionData(data, totalCount) {
+            const countInfo = document.getElementById('countInfo');
+            if (totalCount > 500) {
+                countInfo.innerHTML = `共找到 ${totalCount} 条招生信息，显示前 500 条 &nbsp;|&nbsp; <span style="cursor:pointer;color:#2196F3;" onclick="toggleAllCards()">▼ 展开全部</span>`;
+            } else {
+                countInfo.innerHTML = `共找到 ${totalCount} 条招生信息 &nbsp;|&nbsp; <span style="cursor:pointer;color:#2196F3;" onclick="toggleAllCards()">▼ 展开全部</span>`;
+            }
+
+            const container = document.getElementById('schoolsContainer');
+            
+            if (data.length === 0) {
+                container.innerHTML = '<div class="no-data">未找到相关的招生信息</div>';
+                document.getElementById('summaryStats').style.display = 'none';
+                return;
+            }
+
+            // 按学校分组
+            const schoolGroups = {};
+            
+            data.forEach(item => {
+                let schoolName = (item['    学校'] || item['学校'] || '-').trim();
+                schoolName = schoolName.replace(/^\d+\./, '').replace(/（停招）/g, '').replace(/\n.*$/, '').trim();
+                
+                if (!schoolGroups[schoolName]) {
+                    schoolGroups[schoolName] = {
+                        type: getSchoolType(schoolName),
+                        majors: []
+                    };
+                }
+                schoolGroups[schoolName].majors.push(item);
+            });
+
+            // 分类统计学校数量
+            const publicSchoolSet = new Set();
+            const privateSchoolSet = new Set();
+            
+            Object.keys(schoolGroups).forEach(schoolName => {
+                const type = schoolGroups[schoolName].type;
+                if (type === '公办') publicSchoolSet.add(schoolName);
+                else if (type === '民办') privateSchoolSet.add(schoolName);
+            });
+
+            // 更新统计卡片
+            document.getElementById('publicSchoolCount').textContent = publicSchoolSet.size;
+            document.getElementById('privateSchoolCount').textContent = privateSchoolSet.size;
+            document.getElementById('summaryStats').style.display = 'grid';
+
+            // 生成学校卡片HTML
+            function buildSchoolCard(schoolName, group) {
+                const typeLabel = group.type === '公办' ? '公办' : (group.type === '民办' ? '民办' : '其他');
+                const typeClass = group.type === '公办' ? 'public' : (group.type === '民办' ? 'private' : 'other');
+                
+                let majorsHtml = '';
+                group.majors.forEach(item => {
+                    const majorName = item['招生专业'] || '-';
+                    const duration = item['学制'] || '-';
+                    const category = item['科类'] || '-';
+                    const studentCount = item['招生人数'] || '-';
+                    const score = item['普通考生'] || item['2025年\n报录比'] || '-';
+                    const tuition = item['学费（元）'] || '-';
+                    
+                    let itemClass = '';
+                    if (item.isNew) itemClass = 'new';
+                    else if (item.isStop) itemClass = 'stop';
+                    
+                    majorsHtml += `
+                        <div class="major-item ${itemClass}">
+                            <span class="major-name">${majorName}</span>
+                            <span class="info"><span class="label">学制：</span>${duration}</span>
+                            <span class="info"><span class="label">科类：</span>${category}</span>
+                            <span class="info"><span class="label">招生：</span>${studentCount}</span>
+                            <span class="info"><span class="label">分数线：</span>${score}</span>
+                            <span class="info"><span class="label">学费：</span>${tuition}</span>
+                        </div>
+                    `;
+                });
+                
+                const majorCount = group.majors.length;
+                
+                return `
+                    <div class="school-card ${typeClass}">
+                        <div class="school-header" onclick="toggleSchoolCard(this)" style="cursor:pointer;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span class="expand-icon">▼</span>
+                                <span class="school-name">${schoolName}</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:15px;">
+                                <span style="color:#666;font-size:0.85rem;">共${majorCount}个专业</span>
+                                <span class="school-type ${typeClass}">${typeLabel}</span>
+                            </div>
+                        </div>
+                        <div class="major-list">
+                            <div class="major-header">
+                                <span>招生专业</span>
+                                <span>学制</span>
+                                <span>科类</span>
+                                <span>招生人数</span>
+                                <span>分数线</span>
+                                <span>学费(元/年)</span>
+                            </div>
+                            ${majorsHtml}
+                        </div>
+                    </div>
+                `;
+            }
+
+            let html = '';
+
+            // 公办院校
+            const publicSchools = Object.keys(schoolGroups).filter(s => schoolGroups[s].type === '公办');
+            if (publicSchools.length > 0) {
+                html += `<div class="section-title public">公办院校</div>`;
+                publicSchools.forEach(schoolName => {
+                    html += buildSchoolCard(schoolName, schoolGroups[schoolName]);
+                });
+            }
+
+            // 民办院校
+            const privateSchools = Object.keys(schoolGroups).filter(s => schoolGroups[s].type === '民办');
+            if (privateSchools.length > 0) {
+                html += `<div class="section-title private">民办院校</div>`;
+                privateSchools.forEach(schoolName => {
+                    html += buildSchoolCard(schoolName, schoolGroups[schoolName]);
+                });
+            }
+
+            // 其他院校
+            const otherSchools = Object.keys(schoolGroups).filter(s => schoolGroups[s].type === '未知');
+            if (otherSchools.length > 0) {
+                html += `<div class="section-title" style="background:#f5f5f5;color:#666;">其他院校</div>`;
+                otherSchools.forEach(schoolName => {
+                    html += buildSchoolCard(schoolName, schoolGroups[schoolName]);
+                });
+            }
+
+            container.innerHTML = html;
+        }
+
+        window.selectMajor = function(index) {
+            if (!window.currentMatches || !window.currentMatches[index]) return;
+            
+            const selected = window.currentMatches[index];
+            console.log('选择专业:', selected['专业名称'], '大类:', selected['大类名称']);
+            
+            const items = document.querySelectorAll('.match-item');
+            items.forEach((item, i) => {
+                item.style.background = i === index ? '#e8f0ff' : '';
+            });
+
+            const admissionData = findAdmissionByCategory(selected['大类名称']);
+            const limitedData = admissionData.slice(0, 500);
+            displayAdmissionData(limitedData, admissionData.length);
+        };
+
+        // 折叠/展开学校卡片
+        window.toggleSchoolCard = function(header) {
+            const card = header.closest('.school-card');
+            const majorList = card.querySelector('.major-list');
+            const icon = header.querySelector('.expand-icon');
+            
+            if (majorList.style.display === 'none') {
+                majorList.style.display = 'block';
+                icon.textContent = '▼';
+            } else {
+                majorList.style.display = 'none';
+                icon.textContent = '▶';
+            }
+        };
+
+        // 一键折叠/展开所有卡片
+        var allExpanded = true;
+        window.toggleAllCards = function() {
+            const cards = document.querySelectorAll('.school-card .major-list');
+            const icons = document.querySelectorAll('.school-card .expand-icon');
+            const countInfo = document.getElementById('countInfo');
+            
+            allExpanded = !allExpanded;
+            
+            cards.forEach((majorList, index) => {
+                majorList.style.display = allExpanded ? 'block' : 'none';
+                icons[index].textContent = allExpanded ? '▼' : '▶';
+            });
+            
+            const totalCount = parseInt(countInfo.textContent.match(/共找到\s*(\d+)/)[1]);
+            if (totalCount > 500) {
+                countInfo.innerHTML = `共找到 ${totalCount} 条招生信息，显示前 500 条 &nbsp;|&nbsp; <span style="cursor:pointer;color:#2196F3;" onclick="toggleAllCards()">${allExpanded ? '▶ 折叠全部' : '▼ 展开全部'}</span>`;
+            } else {
+                countInfo.innerHTML = `共找到 ${totalCount} 条招生信息 &nbsp;|&nbsp; <span style="cursor:pointer;color:#2196F3;" onclick="toggleAllCards()">${allExpanded ? '▶ 折叠全部' : '▼ 展开全部'}</span>`;
+            }
+        };
+
+        // ========== 辅助函数 ==========
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('searchBtn').disabled = show;
+        }
+
+        function showError(msg) {
+            const errorDiv = document.getElementById('errorMsg');
+            errorDiv.textContent = msg;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorMsg').style.display = 'none';
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchMajor();
+            }
+        });
+
+        window.onload = init;
+    </script>
+</body>
+</html>
