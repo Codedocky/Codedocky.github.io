@@ -263,22 +263,37 @@
         <div id="resultContainer"></div>
     </div>
 
-    <script src="dz.json"></script>
-    <script src="26zsjz.json"></script>
     <script>
         // 获取数据
         let majorData = [];
         let zsjzData = null;
         
-        // 初始化数据
-        function initData() {
+        // 初始化数据 - 使用 fetch 加载 JSON 文件
+        async function initData() {
             try {
-                majorData = dzData.Sheet1 || [];
-                zsjzData = zsData26 || {};
+                // 加载专业数据
+                const dzResponse = await fetch('dz.json');
+                let dzJson = await dzResponse.json();
+                // 处理 var dzData = {...} 格式
+                if (dzJson.Sheet1) {
+                    majorData = dzJson.Sheet1;
+                } else if (dzJson.dzData && dzJson.dzData.Sheet1) {
+                    majorData = dzJson.dzData.Sheet1;
+                }
                 console.log('专业数据加载完成:', majorData.length, '条');
+                
+                // 加载招生数据
+                const zsjzResponse = await fetch('26zsjz.json');
+                zsjzData = await zsjzResponse.json();
+                // 处理 var zsData26 = {...} 格式
+                if (zsjzData.zsData26) {
+                    zsjzData = zsjzData.zsData26;
+                }
                 console.log('招生数据加载完成');
             } catch (e) {
                 console.error('数据加载失败:', e);
+                document.getElementById('resultContainer').innerHTML = 
+                    '<div class="error">数据加载失败，请确保在服务器环境下运行（如GitHub Pages）</div>';
             }
         }
         
