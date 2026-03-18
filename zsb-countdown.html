@@ -54,6 +54,10 @@
             margin-bottom: 10px;
             letter-spacing: 1px;
             text-shadow: 0 2px 4px rgba(1, 47, 167, 0.1);
+            word-break: keep-all;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .subtitle {
@@ -116,8 +120,10 @@
         .time-unit {
             background: linear-gradient(145deg, #ffffff, #f0f4ff);
             border-radius: 15px;
-            padding: 25px 15px;
-            min-width: 120px;
+            padding: 20px 10px;
+            flex: 1;
+            min-width: 0;
+            max-width: 140px;
             box-shadow: 0 8px 20px rgba(1, 47, 167, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             position: relative;
@@ -140,18 +146,19 @@
         }
 
         .time-value {
-            font-size: 3.2rem;
+            font-size: 2.8rem;
             font-weight: 700;
             color: #012fa7;
             line-height: 1;
             margin-bottom: 5px;
+            font-variant-numeric: tabular-nums;
         }
 
         .time-label {
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: #666;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             font-weight: 500;
         }
 
@@ -219,37 +226,58 @@
             border-top: 1px solid #eee;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
             .container {
-                padding: 25px;
+                padding: 30px;
             }
             
             .title {
-                font-size: 2.2rem;
+                font-size: 2.4rem;
             }
             
             .time-unit {
-                min-width: 90px;
-                padding: 20px 10px;
+                padding: 18px 8px;
+                max-width: 120px;
             }
             
             .time-value {
-                font-size: 2.5rem;
+                font-size: 2.4rem;
             }
             
             .timer {
                 gap: 15px;
             }
+            
+            .exam-info {
+                padding: 18px;
+            }
+            
+            .motivation {
+                padding: 20px;
+            }
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px 20px;
+                border-radius: 18px;
+            }
+            
             .title {
-                font-size: 1.8rem;
+                font-size: 2.1rem;
+                letter-spacing: 0.5px;
+                margin-bottom: 8px;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+                margin-bottom: 20px;
             }
             
             .time-unit {
-                min-width: 70px;
-                padding: 15px 8px;
+                padding: 16px 6px;
+                max-width: 100px;
+                border-radius: 12px;
             }
             
             .time-value {
@@ -258,6 +286,207 @@
             
             .time-label {
                 font-size: 0.9rem;
+                letter-spacing: 0.3px;
+            }
+            
+            .timer {
+                gap: 12px;
+            }
+            
+            .exam-info {
+                padding: 16px;
+                margin: 25px 0;
+            }
+            
+            .exam-info h3 {
+                font-size: 1.2rem;
+            }
+            
+            .motivation {
+                padding: 18px;
+                margin-top: 30px;
+            }
+            
+            .motivation h3 {
+                font-size: 1.2rem;
+            }
+            
+            .motivation p {
+                font-size: 1rem;
+                line-height: 1.5;
+            }
+            
+            .footer {
+                margin-top: 30px;
+                padding-top: 15px;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 15px 10px;
+            }
+            
+            .container {
+                padding: 20px 16px;
+                border-radius: 16px;
+            }
+            
+            .title {
+                font-size: 1.8rem;
+                margin-bottom: 6px;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+                margin-bottom: 18px;
+            }
+            
+            .time-unit {
+                padding: 14px 5px;
+                max-width: 85px;
+                border-radius: 10px;
+            }
+            
+            .time-value {
+                font-size: 1.8rem;
+            }
+            
+            .time-label {
+                font-size: 0.85rem;
+            }
+            
+            .timer {
+                gap: 10px;
+            }
+            
+            .countdown {
+                margin: 30px 0;
+            }
+            
+            .countdown-title {
+                font-size: 1.2rem;
+                margin-bottom: 20px;
+            }
+            
+            .exam-info {
+                padding: 14px;
+                margin: 20px 0;
+                border-left-width: 3px;
+            }
+            
+            .exam-info h3 {
+                font-size: 1.1rem;
+                margin-bottom: 8px;
+            }
+            
+            .info-item {
+                font-size: 0.95rem;
+                margin-bottom: 6px;
+            }
+            
+            .progress-container {
+                margin-top: 30px;
+            }
+            
+            .progress-title {
+                font-size: 1.1rem;
+                margin-bottom: 12px;
+            }
+            
+            .progress-bar {
+                height: 10px;
+            }
+            
+            .progress-text {
+                font-size: 0.85rem;
+                margin-top: 8px;
+            }
+            
+            .motivation {
+                padding: 16px;
+                margin-top: 25px;
+                border-radius: 12px;
+            }
+            
+            .motivation h3 {
+                font-size: 1.1rem;
+                margin-bottom: 12px;
+            }
+            
+            .motivation p {
+                font-size: 0.95rem;
+            }
+            
+            .footer {
+                margin-top: 25px;
+                padding-top: 12px;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .title {
+                font-size: 1.7rem;
+            }
+            
+            .time-unit {
+                padding: 12px 4px;
+                max-width: 75px;
+            }
+            
+            .time-value {
+                font-size: 1.6rem;
+            }
+            
+            .time-label {
+                font-size: 0.8rem;
+            }
+            
+            .timer {
+                gap: 8px;
+            }
+            
+            .exam-info {
+                padding: 12px;
+            }
+            
+            .info-item {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* 控制移动端换行 */
+        .mobile-break {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-break {
+                display: inline;
+            }
+        }
+        
+        @media (max-width: 320px) {
+            .title {
+                font-size: 1.6rem;
+                white-space: normal;
+                word-break: break-word;
+                text-overflow: clip;
+            }
+            
+            .time-unit {
+                padding: 10px 3px;
+                max-width: 68px;
+            }
+            
+            .time-value {
+                font-size: 1.5rem;
+            }
+            
+            .timer {
+                gap: 6px;
             }
         }
     </style>
@@ -265,7 +494,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1 class="title">安徽省专升本考试倒计时</h1>
+            <h1 class="title">安徽省专升本<br class="mobile-break">考试倒计时</h1>
             <p class="subtitle">全力以赴，备战2026年安徽省普通高校专升本招生考试</p>
         </div>
 
